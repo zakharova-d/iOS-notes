@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>REST API in iOS — Interview Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --border: #1f2433;
+    --accent: #5b8fff;
+    --accent2: #ff6b6b;
+    --accent3: #43e8a4;
+    --accent4: #f9c74f;
+    --text: #dce3f0;
+    --muted: #6b7a99;
+    --code-bg: #0a0c12;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 32px 20px 60px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #fff;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .toc {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .toc a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  section { margin-bottom: 44px; }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(91,143,255,0.1);
+    border: 1px solid rgba(91,143,255,0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-blue { background: var(--accent); }
+  .dot-red  { background: var(--accent2); }
+  .dot-green{ background: var(--accent3); }
+  .dot-yellow{ background: var(--accent4); }
+
+  p { color: var(--text); opacity: 0.85; font-size: 14px; }
+
+  .example {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--accent3);
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .example::before { content: "💡 "; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #c9d4f0;
+  }
+
+  .kw  { color: #ff7eb6; }
+  .fn  { color: #79c0ff; }
+  .str { color: #a8d8a8; }
+  .cm  { color: #4d5875; font-style: italic; }
+  .ty  { color: #f9c74f; }
+  .num { color: #ff9a5c; }
+
+  .pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    padding: 3px 10px;
+    border-radius: 5px;
+  }
+  .pill-blue   { background: rgba(91,143,255,0.12); color: var(--accent); border: 1px solid rgba(91,143,255,0.2); }
+  .pill-red    { background: rgba(255,107,107,0.1); color: var(--accent2); border: 1px solid rgba(255,107,107,0.2); }
+  .pill-green  { background: rgba(67,232,164,0.1); color: var(--accent3); border: 1px solid rgba(67,232,164,0.2); }
+  .pill-yellow { background: rgba(249,199,79,0.1); color: var(--accent4); border: 1px solid rgba(249,199,79,0.2); }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media(max-width: 580px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .warn {
+    border-left: 3px solid var(--accent2);
+    padding-left: 14px;
+    font-size: 13.5px;
+    color: var(--accent2);
+    opacity: 0.9;
+    margin-top: 8px;
+  }
+
+  .q-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    background: rgba(249,199,79,0.1);
+    color: var(--accent4);
+    border: 1px solid rgba(249,199,79,0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>REST API in <span>iOS</span></h1>
+    <div style="margin-top:6px; color:var(--muted); font-size:13px; font-family:'JetBrains Mono',monospace;">Interview cheatsheet · Swift</div>
+  </div>
+  <span class="tag">URLSession · async/await · Codable · Errors</span>
+</header>
+
+<nav class="toc">
+  <a href="#s1">REST basics</a>
+  <a href="#s2">URLSession</a>
+  <a href="#s3">async/await</a>
+  <a href="#s4">Codable</a>
+  <a href="#s5">Errors</a>
+  <a href="#s6">Architecture</a>
+  <a href="#s7">Q&A</a>
+</nav>
+
+<!-- 1. REST basics -->
+<section id="s1">
+  <div class="section-title">
+    <span class="section-num">01</span>
+    <h2>REST — що це таке</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Принцип</div>
+    <p>REST — архітектурний стиль для спілкування клієнта (iOS-додаток) з сервером через HTTP. Запит = метод + URL + (опційно) тіло.</p>
+    <div class="pill-row">
+      <span class="pill pill-blue">GET — отримати</span>
+      <span class="pill pill-green">POST — створити</span>
+      <span class="pill pill-yellow">PUT/PATCH — оновити</span>
+      <span class="pill pill-red">DELETE — видалити</span>
+    </div>
+    <div class="example">GET /users/42 → повертає профіль користувача з id=42</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>HTTP статус-коди</div>
+    <div class="pill-row">
+      <span class="pill pill-green">2xx — успіх</span>
+      <span class="pill pill-yellow">3xx — редирект</span>
+      <span class="pill pill-red">4xx — помилка клієнта</span>
+      <span class="pill pill-red">5xx — помилка сервера</span>
+    </div>
+    <div class="example">200 OK, 201 Created, 401 Unauthorized, 404 Not Found, 500 Internal Server Error</div>
+  </div>
+</section>
+
+<!-- 2. URLSession -->
+<section id="s2">
+  <div class="section-title">
+    <span class="section-num">02</span>
+    <h2>URLSession — основний інструмент</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке URLSession</div>
+    <p>Це клас в Foundation, який керує мережевими запитами. Як менеджер пошти: ти даєш йому конверт (URLRequest), він відправляє і повертає відповідь.</p>
+    <pre><span class="kw">let</span> url = <span class="ty">URL</span>(string: <span class="str">"https://api.example.com/posts"</span>)!
+<span class="kw">let</span> (data, response) = <span class="kw">try await</span> <span class="ty">URLSession</span>.shared.<span class="fn">data</span>(from: url)</pre>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-yellow"></span>Типи конфігурацій</div>
+      <div class="pill-row" style="flex-direction:column; gap:6px;">
+        <span class="pill pill-blue">.default — звичайний, з кешем</span>
+        <span class="pill pill-yellow">.ephemeral — без кешу / cookies</span>
+        <span class="pill pill-green">.background — завантаження у фоні</span>
+      </div>
+      <div class="example">Для завантаження файлів коли додаток згорнутий → .background</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>URLRequest vs URL</div>
+      <p style="font-size:13px;"><b>URL</b> — просто адреса.<br><b>URLRequest</b> — конверт з адресою + метод, хедери, тіло.</p>
+      <pre style="margin-top:8px;"><span class="kw">var</span> request = <span class="ty">URLRequest</span>(url: url)
+request.httpMethod = <span class="str">"POST"</span>
+request.setValue(
+  <span class="str">"application/json"</span>,
+  forHTTPHeaderField: <span class="str">"Content-Type"</span>
+)</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 3. async/await -->
+<section id="s3">
+  <div class="section-title">
+    <span class="section-num">03</span>
+    <h2>async / await — сучасний підхід</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-accent"></span>Чому async/await краще за completion handlers <span class="q-badge">❓ часто питають</span></div>
+    <p>Completion handler — це "зателефонуй мені коли буде готово". Якщо таких дзвінків багато — callback hell. async/await дає лінійний код без вкладених закриттів.</p>
+    <pre><span class="cm">// Старий підхід — callback hell</span>
+<span class="fn">fetchUser</span>(id: <span class="num">1</span>) { user <span class="kw">in</span>
+    <span class="fn">fetchPosts</span>(for: user) { posts <span class="kw">in</span>
+        <span class="fn">fetchComments</span>(for: posts[<span class="num">0</span>]) { comments <span class="kw">in</span>
+            <span class="cm">// ...</span>
+        }
+    }
+}
+
+<span class="cm">// Новий підхід — читається зверху вниз</span>
+<span class="kw">let</span> user     = <span class="kw">try await</span> <span class="fn">fetchUser</span>(id: <span class="num">1</span>)
+<span class="kw">let</span> posts    = <span class="kw">try await</span> <span class="fn">fetchPosts</span>(for: user)
+<span class="kw">let</span> comments = <span class="kw">try await</span> <span class="fn">fetchComments</span>(for: posts[<span class="num">0</span>])</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Повний GET-запит з async/await</div>
+    <pre><span class="kw">func</span> <span class="fn">fetchPosts</span>() <span class="kw">async throws</span> -> [<span class="ty">Post</span>] {
+    <span class="kw">let</span> url = <span class="ty">URL</span>(string: <span class="str">"https://jsonplaceholder.typicode.com/posts"</span>)!
+    <span class="kw">let</span> (data, response) = <span class="kw">try await</span> <span class="ty">URLSession</span>.shared.<span class="fn">data</span>(from: url)
+
+    <span class="kw">guard let</span> http = response <span class="kw">as?</span> <span class="ty">HTTPURLResponse</span>,
+          http.statusCode == <span class="num">200</span> <span class="kw">else</span> {
+        <span class="kw">throw</span> <span class="ty">NetworkError</span>.badResponse
+    }
+
+    <span class="kw">return try</span> <span class="ty">JSONDecoder</span>().<span class="fn">decode</span>([<span class="ty">Post</span>].<span class="kw">self</span>, from: data)
+}</pre>
+    <div class="example">fetchPosts — як офіціант: пішов на кухню (сервер), зачекав, приніс страву (дані). async = він не блокує інших клієнтів поки чекає.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Task та @MainActor <span class="q-badge">❓ часто питають</span></div>
+    <p>async-функцію не можна викликати напряму з синхронного коду. Треба обернути в <b>Task</b>. UI оновлювати — тільки на <b>MainActor</b>.</p>
+    <pre><span class="cm">// У ViewModel / View</span>
+<span class="ty">Task</span> {
+    <span class="kw">do</span> {
+        posts = <span class="kw">try await</span> <span class="fn">fetchPosts</span>()    <span class="cm">// фоновий потік</span>
+        <span class="kw">await</span> <span class="ty">MainActor</span>.<span class="fn">run</span> {
+            self.<span class="fn">updateUI</span>()               <span class="cm">// повертаємось на main</span>
+        }
+    } <span class="kw">catch</span> {
+        <span class="fn">print</span>(error)
+    }
+}</pre>
+  </div>
+</section>
+
+<!-- 4. Codable -->
+<section id="s4">
+  <div class="section-title">
+    <span class="section-num">04</span>
+    <h2>Codable — парсинг JSON</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Codable = Encodable + Decodable</div>
+    <p>Автоматично перетворює JSON ↔ Swift-структуру. Якщо ключі JSON збігаються з назвами полів — нічого додаткового не треба.</p>
+    <pre><span class="kw">struct</span> <span class="ty">Post</span>: <span class="ty">Codable</span> {
+    <span class="kw">let</span> id:    <span class="ty">Int</span>
+    <span class="kw">let</span> title: <span class="ty">String</span>
+    <span class="kw">let</span> body:  <span class="ty">String</span>
+}
+
+<span class="cm">// Decode</span>
+<span class="kw">let</span> post = <span class="kw">try</span> <span class="ty">JSONDecoder</span>().<span class="fn">decode</span>(<span class="ty">Post</span>.<span class="kw">self</span>, from: data)
+
+<span class="cm">// Encode</span>
+<span class="kw">let</span> data = <span class="kw">try</span> <span class="ty">JSONEncoder</span>().<span class="fn">encode</span>(post)</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>CodingKeys — коли ключі різні <span class="q-badge">❓ часто питають</span></div>
+    <p>JSON приходить у snake_case, а Swift-код у camelCase. Рішень два:</p>
+    <pre><span class="cm">// Варіант 1: автоматично</span>
+<span class="kw">let</span> decoder = <span class="ty">JSONDecoder</span>()
+decoder.keyDecodingStrategy = .convertFromSnakeCase
+
+<span class="cm">// Варіант 2: явно через CodingKeys</span>
+<span class="kw">struct</span> <span class="ty">User</span>: <span class="ty">Codable</span> {
+    <span class="kw">let</span> firstName: <span class="ty">String</span>
+
+    <span class="kw">enum</span> <span class="ty">CodingKeys</span>: <span class="ty">String</span>, <span class="ty">CodingKey</span> {
+        <span class="kw">case</span> firstName = <span class="str">"first_name"</span>
+    }
+}</pre>
+    <div class="example">API повертає "first_name", але в Swift хочемо firstName → CodingKeys як перекладач</div>
+  </div>
+</section>
+
+<!-- 5. Errors -->
+<section id="s5">
+  <div class="section-title">
+    <span class="section-num">05</span>
+    <h2>Обробка помилок</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Власний NetworkError enum <span class="q-badge">❓ часто питають</span></div>
+    <pre><span class="kw">enum</span> <span class="ty">NetworkError</span>: <span class="ty">Error</span> {
+    <span class="kw">case</span> badURL
+    <span class="kw">case</span> badResponse(<span class="ty">Int</span>)   <span class="cm">// статус-код</span>
+    <span class="kw">case</span> decodingFailed
+    <span class="kw">case</span> noInternet
+}
+
+<span class="cm">// Використання</span>
+<span class="kw">guard</span> http.statusCode == <span class="num">200</span> <span class="kw">else</span> {
+    <span class="kw">throw</span> <span class="ty">NetworkError</span>.badResponse(http.statusCode)
+}</pre>
+    <div class="example">Замість загадкового "щось пішло не так" — конкретний тип помилки, який можна обробити в UI</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Що перевіряти після запиту</div>
+    <div class="pill-row" style="flex-direction:column; gap:6px; margin-top:4px;">
+      <span class="pill pill-red">1. Чи взагалі отримали відповідь (URLError)</span>
+      <span class="pill pill-yellow">2. Чи це HTTPURLResponse (а не URLResponse)</span>
+      <span class="pill pill-green">3. Чи статус-код 2xx</span>
+      <span class="pill pill-blue">4. Чи успішно декодуються дані</span>
+    </div>
+    <div class="warn">Не забудь кастити response as? HTTPURLResponse — інакше не доберешся до statusCode</div>
+  </div>
+</section>
+
+<!-- 6. Architecture -->
+<section id="s6">
+  <div class="section-title">
+    <span class="section-num">06</span>
+    <h2>Архітектура — як організувати код</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>NetworkManager / APIService <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Не пиши URLSession прямо у View чи ViewModel. Виноси в окремий шар — NetworkManager або APIService. View → ViewModel → Service → URLSession.</p>
+    <pre><span class="kw">protocol</span> <span class="ty">PostsServiceProtocol</span> {
+    <span class="kw">func</span> <span class="fn">fetchPosts</span>() <span class="kw">async throws</span> -> [<span class="ty">Post</span>]
+}
+
+<span class="kw">final class</span> <span class="ty">PostsService</span>: <span class="ty">PostsServiceProtocol</span> {
+    <span class="kw">func</span> <span class="fn">fetchPosts</span>() <span class="kw">async throws</span> -> [<span class="ty">Post</span>] {
+        <span class="cm">// URLSession логіка тут</span>
+    }
+}
+
+<span class="cm">// ViewModel отримує через DI</span>
+<span class="kw">final class</span> <span class="ty">PostsViewModel</span>: <span class="ty">ObservableObject</span> {
+    <span class="kw">private let</span> service: <span class="ty">PostsServiceProtocol</span>
+
+    <span class="kw">init</span>(service: <span class="ty">PostsServiceProtocol</span> = <span class="ty">PostsService</span>()) {
+        <span class="kw">self</span>.service = service
+    }
+}</pre>
+    <div class="example">Protocol + DI дозволяє підставити MockService в тестах — саме це питають про testability</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>POST-запит з тілом</div>
+    <pre><span class="kw">func</span> <span class="fn">createPost</span>(_ post: <span class="ty">Post</span>) <span class="kw">async throws</span> {
+    <span class="kw">var</span> request = <span class="ty">URLRequest</span>(url: url)
+    request.httpMethod = <span class="str">"POST"</span>
+    request.setValue(<span class="str">"application/json"</span>, forHTTPHeaderField: <span class="str">"Content-Type"</span>)
+    request.httpBody = <span class="kw">try</span> <span class="ty">JSONEncoder</span>().<span class="fn">encode</span>(post)
+
+    <span class="kw">let</span> (_, response) = <span class="kw">try await</span> <span class="ty">URLSession</span>.shared.<span class="fn">data</span>(for: request)
+    <span class="cm">// перевіряємо статус...</span>
+}</pre>
+  </div>
+</section>
+
+<!-- 7. Q&A -->
+<section id="s7">
+  <div class="section-title">
+    <span class="section-num">07</span>
+    <h2>Типові питання на співбесіді</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Чим відрізняється URLSession від Alamofire?</div>
+    <p>URLSession — нативний, вбудований. Alamofire — бібліотека-обгортка над ним. Для більшості задач URLSession достатньо, Alamofire зручніший для складних сценаріїв (retry, interceptors). На співбесіді краще вміти обидва і пояснити коли використовуєш що.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Як уникнути retain cycle в мережевих запитах?</div>
+    <p>У Task і completion handlers використовуй <b>[weak self]</b>.</p>
+    <pre><span class="ty">Task</span> { [<span class="kw">weak self</span>] <span class="kw">in</span>
+    <span class="kw">guard let self else</span> { <span class="kw">return</span> }
+    <span class="kw">let</span> data = <span class="kw">try await</span> self.service.<span class="fn">fetchPosts</span>()
+}</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Як скасувати запит?</div>
+    <pre><span class="kw">var</span> task: <span class="ty">Task</span>&lt;<span class="ty">Void</span>, <span class="ty">Never</span>>?
+
+task = <span class="ty">Task</span> {
+    posts = <span class="kw">try await</span> service.<span class="fn">fetchPosts</span>()
+}
+
+<span class="cm">// При deinit або зміні екрану</span>
+task?.<span class="fn">cancel</span>()</pre>
+    <div class="example">Як зупинити офіціанта — якщо вже передумав замовляти, cancel() скасує запит</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке URLCache?</div>
+    <p>Вбудований кеш відповідей. URLSession.shared автоматично кешує GET-запити. Можна контролювати через URLRequest.cachePolicy: .reloadIgnoringCache, .returnCacheDataElseLoad тощо.</p>
+    <div class="example">Як браузер: не завантажує картинку заново якщо вже є в кеші</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Як передати Authorization token?</div>
+    <pre>request.setValue(
+    <span class="str">"Bearer \(token)"</span>,
+    forHTTPHeaderField: <span class="str">"Authorization"</span>
+)</pre>
+  </div>
+</section>
+
+<footer>iOS Interview Cheatsheet · REST API · Swift</footer>
+</body>
+</html>
