@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Management in iOS — Interview Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --border: #1f2433;
+    --accent: #5b8fff;
+    --accent2: #ff6b6b;
+    --accent3: #43e8a4;
+    --accent4: #f9c74f;
+    --text: #dce3f0;
+    --muted: #6b7a99;
+    --code-bg: #0a0c12;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 32px 20px 60px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+    margin-bottom: 36px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  header h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
+  header h1 span { color: var(--accent); }
+
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .toc { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+  .toc a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .toc a:hover { border-color: var(--accent); color: var(--accent); }
+
+  section { margin-bottom: 44px; }
+
+  .section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(91,143,255,0.1);
+    border: 1px solid rgba(91,143,255,0.25);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  h2 { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: -0.2px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-blue   { background: var(--accent); }
+  .dot-red    { background: var(--accent2); }
+  .dot-green  { background: var(--accent3); }
+  .dot-yellow { background: var(--accent4); }
+
+  p { color: var(--text); opacity: 0.85; font-size: 14px; }
+
+  .example {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--accent3);
+    font-style: italic;
+    opacity: 0.85;
+  }
+  .example::before { content: "💡 "; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 10px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #c9d4f0;
+  }
+
+  .kw  { color: #ff7eb6; }
+  .fn  { color: #79c0ff; }
+  .str { color: #a8d8a8; }
+  .cm  { color: #4d5875; font-style: italic; }
+  .ty  { color: #f9c74f; }
+  .num { color: #ff9a5c; }
+
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .pill { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; padding: 3px 10px; border-radius: 5px; }
+  .pill-blue   { background: rgba(91,143,255,0.12); color: var(--accent);  border: 1px solid rgba(91,143,255,0.2); }
+  .pill-red    { background: rgba(255,107,107,0.1);  color: var(--accent2); border: 1px solid rgba(255,107,107,0.2); }
+  .pill-green  { background: rgba(67,232,164,0.1);   color: var(--accent3); border: 1px solid rgba(67,232,164,0.2); }
+  .pill-yellow { background: rgba(249,199,79,0.1);   color: var(--accent4); border: 1px solid rgba(249,199,79,0.2); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media(max-width: 580px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .warn {
+    border-left: 3px solid var(--accent2);
+    padding-left: 14px;
+    font-size: 13.5px;
+    color: var(--accent2);
+    opacity: 0.9;
+    margin-top: 8px;
+  }
+
+  .q-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    background: rgba(249,199,79,0.1);
+    color: var(--accent4);
+    border: 1px solid rgba(249,199,79,0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    margin-bottom: 28px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  footer {
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← всі конспекти</a>
+
+<header>
+  <div>
+    <h1>Memory Management in <span>iOS</span></h1>
+    <div style="margin-top:6px; color:var(--muted); font-size:13px; font-family:'JetBrains Mono',monospace;">Interview cheatsheet · Swift</div>
+  </div>
+  <span class="tag">ARC · weak · retain cycle · deinit</span>
+</header>
+
+<nav class="toc">
+  <a href="#s1">ARC</a>
+  <a href="#s2">strong / weak / unowned</a>
+  <a href="#s3">Retain cycle</a>
+  <a href="#s4">Closure capture</a>
+  <a href="#s5">deinit</a>
+  <a href="#s6">Q&A</a>
+</nav>
+
+<!-- 1. ARC -->
+<section id="s1">
+  <div class="section-title">
+    <span class="section-num">01</span>
+    <h2>ARC — Automatic Reference Counting</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке ARC</div>
+    <p>ARC — механізм управління пам'яттю в Swift. Він автоматично відстежує скільки місць у коді "тримають" об'єкт. Коли лічильник падає до 0 — об'єкт видаляється з пам'яті.</p>
+    <div class="example">Як бібліотечна книга: поки хоч одна людина її тримає — вона існує. Всі повернули → книга зникає з полиці.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Reference Count у дії</div>
+    <pre><span class="kw">class</span> <span class="ty">Dog</span> {
+    <span class="kw">let</span> name: <span class="ty">String</span>
+    <span class="kw">init</span>(name: <span class="ty">String</span>) { <span class="kw">self</span>.name = name }
+    <span class="kw">deinit</span> { <span class="fn">print</span>(<span class="str">"\(name) видалено з пам'яті"</span>) }
+}
+
+<span class="kw">var</span> dog1: <span class="ty">Dog</span>? = <span class="ty">Dog</span>(name: <span class="str">"Рекс"</span>)  <span class="cm">// count = 1</span>
+<span class="kw">var</span> dog2 = dog1                       <span class="cm">// count = 2</span>
+dog1 = <span class="kw">nil</span>                            <span class="cm">// count = 1</span>
+dog2 = <span class="kw">nil</span>                            <span class="cm">// count = 0 → "Рекс видалено з пам'яті"</span></pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Важливо: ARC тільки для class <span class="q-badge">❓ часто питають</span></div>
+    <p>ARC працює лише з reference types — тобто <b>class</b>. Структури (<b>struct</b>) і перерахування (<b>enum</b>) — value types, вони копіюються і не потребують ARC.</p>
+    <div class="pill-row">
+      <span class="pill pill-blue">class → ARC, heap</span>
+      <span class="pill pill-green">struct → копія, stack</span>
+      <span class="pill pill-green">enum → копія, stack</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2. strong / weak / unowned -->
+<section id="s2">
+  <div class="section-title">
+    <span class="section-num">02</span>
+    <h2>strong / weak / unowned</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>strong — за замовчуванням</div>
+    <p>Кожне звичайне посилання — strong. Збільшує лічильник на 1. Об'єкт живе поки є хоча б одне strong-посилання.</p>
+    <pre><span class="kw">var</span> cat: <span class="ty">Cat</span>? = <span class="ty">Cat</span>()  <span class="cm">// strong, count = 1</span></pre>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>weak</div>
+      <p style="font-size:13px;">Не збільшує лічильник. Завжди <b>Optional</b> — може стати nil якщо об'єкт видалено. Безпечний варіант.</p>
+      <pre><span class="kw">weak var</span> delegate: <span class="ty">MyDelegate</span>?</pre>
+      <div class="example">Делегат, посилання на батьківський VC</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-yellow"></span>unowned</div>
+      <p style="font-size:13px;">Не збільшує лічильник. <b>Non-optional</b> — якщо об'єкт видалено і ти звертаєшся — краш. Використовуй тільки коли впевнений що об'єкт живе довше.</p>
+      <pre><span class="kw">unowned let</span> owner: <span class="ty">Owner</span></pre>
+      <div class="example">Кредитна карта і власник — карта не існує без власника</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>weak vs unowned — коли що? <span class="q-badge">❓ часто питають</span></div>
+    <div class="pill-row" style="flex-direction:column; gap:6px;">
+      <span class="pill pill-green">weak — якщо об'єкт може стати nil раніше (делегат, посилання між VC)</span>
+      <span class="pill pill-yellow">unowned — якщо об'єкт точно живе стільки ж або довше (як self в замиканні всередині об'єкта)</span>
+    </div>
+    <div class="warn">На практиці — майже завжди weak. unowned — тільки якщо дійсно впевнений.</div>
+  </div>
+</section>
+
+<!-- 3. Retain cycle -->
+<section id="s3">
+  <div class="section-title">
+    <span class="section-num">03</span>
+    <h2>Retain Cycle — витік пам'яті</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Що таке retain cycle <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Два об'єкти тримають strong-посилання один на одного. Лічильник ніколи не падає до 0 → обидва назавжди залишаються в пам'яті → memory leak.</p>
+    <pre><span class="kw">class</span> <span class="ty">Person</span> {
+    <span class="kw">var</span> pet: <span class="ty">Pet</span>?          <span class="cm">// strong</span>
+    <span class="kw">deinit</span> { <span class="fn">print</span>(<span class="str">"Person видалено"</span>) }
+}
+
+<span class="kw">class</span> <span class="ty">Pet</span> {
+    <span class="kw">var</span> owner: <span class="ty">Person</span>?     <span class="cm">// strong → retain cycle!</span>
+    <span class="kw">deinit</span> { <span class="fn">print</span>(<span class="str">"Pet видалено"</span>) }
+}
+
+<span class="kw">var</span> person: <span class="ty">Person</span>? = <span class="ty">Person</span>()
+<span class="kw">var</span> pet: <span class="ty">Pet</span>?    = <span class="ty">Pet</span>()
+person?.pet   = pet
+pet?.owner    = person
+
+person = <span class="kw">nil</span>   <span class="cm">// deinit НЕ викликається — цикл тримає обох</span>
+pet    = <span class="kw">nil</span>   <span class="cm">// deinit НЕ викликається</span></pre>
+    <div class="example">Як два чоловіки тримають один одного за руки в колі — жоден не може впасти, але й піти теж не може</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Рішення — зробити одне посилання weak</div>
+    <pre><span class="kw">class</span> <span class="ty">Pet</span> {
+    <span class="kw">weak var</span> owner: <span class="ty">Person</span>?  <span class="cm">// weak → цикл розірвано ✓</span>
+}</pre>
+    <div class="example">Тепер Pet не "тримає" Person — якщо Person видалено, owner стане nil автоматично</div>
+  </div>
+</section>
+
+<!-- 4. Closure capture -->
+<section id="s4">
+  <div class="section-title">
+    <span class="section-num">04</span>
+    <h2>Retain Cycle у замиканнях</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Класичний retain cycle із closure <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Замикання — reference type. Якщо клас тримає замикання, а замикання захоплює self — цикл.</p>
+    <pre><span class="kw">class</span> <span class="ty">ViewModel</span> {
+    <span class="kw">var</span> onUpdate: (() -> <span class="ty">Void</span>)?
+
+    <span class="kw">func</span> <span class="fn">setup</span>() {
+        onUpdate = {
+            <span class="fn">print</span>(<span class="kw">self</span>.title)  <span class="cm">// self захоплено strong → retain cycle!</span>
+        }
+    }
+}</pre>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Рішення — capture list [weak self]</div>
+    <pre><span class="kw">func</span> <span class="fn">setup</span>() {
+    onUpdate = { [<span class="kw">weak self</span>] <span class="kw">in</span>
+        <span class="kw">guard let self else</span> { <span class="kw">return</span> }
+        <span class="fn">print</span>(<span class="kw">self</span>.title)  <span class="cm">// ✓ цикл розірвано</span>
+    }
+}</pre>
+    <div class="example">[weak self] — як тримати мотузку а не ланцюг: якщо треба — можна відпустити</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Коли [weak self] НЕ потрібен</div>
+    <p>Якщо замикання не зберігається (non-escaping) — retain cycle неможливий. Наприклад, <b>map, filter, forEach</b> — вони виконуються одразу і не зберігаються.</p>
+    <pre><span class="cm">// Тут [weak self] не потрібен</span>
+<span class="kw">let</span> doubled = numbers.<span class="fn">map</span> { $0 * <span class="num">2</span> }
+
+<span class="cm">// А тут — потрібен (escaping closure, зберігається)</span>
+<span class="ty">URLSession</span>.shared.<span class="fn">dataTask</span>(with: url) { [<span class="kw">weak self</span>] data, _, _ <span class="kw">in</span>
+    self?.<span class="fn">handleData</span>(data)
+}</pre>
+  </div>
+</section>
+
+<!-- 5. deinit -->
+<section id="s5">
+  <div class="section-title">
+    <span class="section-num">05</span>
+    <h2>deinit — індикатор витоку</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке deinit і навіщо він потрібен</div>
+    <p>deinit викликається коли об'єкт видаляється з пам'яті. Якщо deinit ViewController-а не викликається після його закриття — є retain cycle і memory leak.</p>
+    <pre><span class="kw">class</span> <span class="ty">ProfileViewController</span>: <span class="ty">UIViewController</span> {
+    <span class="kw">deinit</span> {
+        <span class="fn">print</span>(<span class="str">"ProfileVC видалено ✓"</span>)
+        <span class="cm">// якщо це не друкується після pop — шукай retain cycle</span>
+    }
+}</pre>
+    <div class="example">deinit — як індикатор на приладовій панелі: якщо не спрацював коли мав — щось пішло не так</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Як діагностувати витоки</div>
+    <div class="pill-row" style="flex-direction:column; gap:6px; margin-top:4px;">
+      <span class="pill pill-blue">1. Додай print у deinit — перевір чи викликається</span>
+      <span class="pill pill-green">2. Xcode → Debug → Memory Graph Debugger</span>
+      <span class="pill pill-yellow">3. Instruments → Leaks</span>
+    </div>
+  </div>
+</section>
+
+<!-- 6. Q&A -->
+<section id="s6">
+  <div class="section-title">
+    <span class="section-num">06</span>
+    <h2>Типові питання на співбесіді</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Чим відрізняється stack від heap?</div>
+    <p><b>Stack</b> — швидка пам'ять, struct/enum живуть тут, видаляються автоматично при виході зі scope.<br><b>Heap</b> — динамічна пам'ять, class живуть тут, управляється через ARC.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що станеться якщо використати unowned і об'єкт вже видалено?</div>
+    <p>Краш — EXC_BAD_ACCESS. Саме тому unowned лише коли на 100% впевнений що об'єкт живе довше. В сумнівах — завжди weak.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Чи може struct мати retain cycle?</div>
+    <p>Ні — struct є value type і копіюється. Але якщо struct містить властивість типу class — та class-властивість може бути учасником retain cycle.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Delegate pattern — чому delegate завжди weak?</div>
+    <p>Щоб уникнути retain cycle. Зазвичай VC тримає child view strong, а child view має делегат на VC. Якщо делегат strong — цикл. Тому:</p>
+    <pre><span class="kw">protocol</span> <span class="ty">MyDelegate</span>: <span class="ty">AnyObject</span> {}  <span class="cm">// AnyObject → тільки class</span>
+
+<span class="kw">weak var</span> delegate: <span class="ty">MyDelegate</span>?       <span class="cm">// weak → без циклу ✓</span></pre>
+    <div class="warn">Протокол делегата має бути : AnyObject — інакше weak не можна використати</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Як виявити memory leak на практиці?</div>
+    <div class="pill-row" style="flex-direction:column; gap:6px; margin-top:4px;">
+      <span class="pill pill-blue">print у deinit — найшвидший спосіб</span>
+      <span class="pill pill-green">Memory Graph Debugger в Xcode (Debug → Memory Graph)</span>
+      <span class="pill pill-yellow">Instruments → Leaks — для детального аналізу</span>
+    </div>
+  </div>
+</section>
+
+<footer>iOS Interview Cheatsheet · Memory Management · Swift</footer>
+
+</body>
+</html>
