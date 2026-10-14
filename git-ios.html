@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git for iOS Developers — Interview Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  :root{--bg:#0d0f14;--surface:#13161e;--border:#1f2433;--accent:#5b8fff;--accent2:#ff6b6b;--accent3:#43e8a4;--accent4:#f9c74f;--text:#dce3f0;--muted:#6b7a99;--code-bg:#0a0c12}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;line-height:1.6;padding:32px 20px 60px;max-width:860px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#fff}
+  header h1 span{color:var(--accent)}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;letter-spacing:0.5px}
+  .toc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+  .toc a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:var(--muted);transition:all .15s}
+  .toc a:hover{border-color:var(--accent);color:var(--accent)}
+  section{margin-bottom:44px}
+  .section-title{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .section-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(91,143,255,0.1);border:1px solid rgba(91,143,255,0.25);padding:2px 8px;border-radius:4px;flex-shrink:0}
+  h2{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+  .card-title{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot-blue{background:var(--accent)}.dot-red{background:var(--accent2)}.dot-green{background:var(--accent3)}.dot-yellow{background:var(--accent4)}
+  p{color:var(--text);opacity:.85;font-size:14px}
+  .example{margin-top:8px;font-size:13px;color:var(--accent3);font-style:italic;opacity:.85}
+  .example::before{content:"💡 "}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c9d4f0}
+  .kw{color:#ff7eb6}.fn{color:#79c0ff}.str{color:#a8d8a8}.cm{color:#4d5875;font-style:italic}.ty{color:#f9c74f}.num{color:#ff9a5c}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:3px 10px;border-radius:5px}
+  .pill-blue{background:rgba(91,143,255,0.12);color:var(--accent);border:1px solid rgba(91,143,255,0.2)}
+  .pill-red{background:rgba(255,107,107,0.1);color:var(--accent2);border:1px solid rgba(255,107,107,0.2)}
+  .pill-green{background:rgba(67,232,164,0.1);color:var(--accent3);border:1px solid rgba(67,232,164,0.2)}
+  .pill-yellow{background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:580px){.grid2{grid-template-columns:1fr}}
+  .warn{border-left:3px solid var(--accent2);padding-left:14px;font-size:13.5px;color:var(--accent2);opacity:.9;margin-top:8px}
+  .q-badge{font-family:'JetBrains Mono',monospace;font-size:10.5px;background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2);padding:2px 8px;border-radius:4px;margin-left:auto;white-space:nowrap}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:28px;transition:color .15s}
+  .back-link:hover{color:var(--accent)}
+  footer{margin-top:48px;border-top:1px solid var(--border);padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← всі конспекти</a>
+
+<header>
+  <div>
+    <h1>Git for <span>iOS Developers</span></h1>
+    <div style="margin-top:6px;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace;">Interview cheatsheet</div>
+  </div>
+  <span class="tag">merge · rebase · cherry-pick · stash</span>
+</header>
+
+<nav class="toc">
+  <a href="#s1">Основи</a>
+  <a href="#s2">merge vs rebase</a>
+  <a href="#s3">cherry-pick</a>
+  <a href="#s4">stash</a>
+  <a href="#s5">reset vs revert</a>
+  <a href="#s6">Flow</a>
+  <a href="#s7">Q&A</a>
+</nav>
+
+<section id="s1">
+  <div class="section-title"><span class="section-num">01</span><h2>Базові концепції</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Commit, Branch, HEAD</div>
+    <p><b>Commit</b> — знімок стану коду в момент часу.<br><b>Branch</b> — незалежна лінія розробки.<br><b>HEAD</b> — вказівник на поточний commit (де ти зараз).</p>
+    <div class="example">Commit — як збереження в грі. Branch — як паралельне проходження. HEAD — твоя поточна позиція.</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Щоденний workflow</div>
+    <pre><span class="cm"># Створити гілку і переключитись</span>
+git checkout -b feature/login-screen
+
+<span class="cm"># Подивитись статус</span>
+git status
+
+<span class="cm"># Додати файли</span>
+git add .                        <span class="cm"># всі файли</span>
+git add LoginViewController.swift  <span class="cm"># конкретний файл</span>
+
+<span class="cm"># Закомітити</span>
+git commit -m "feat: add login screen UI"
+
+<span class="cm"># Запушити</span>
+git push origin feature/login-screen</pre>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-title"><span class="section-num">02</span><h2>merge vs rebase</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>git merge — зберігає історію <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Створює новий "merge commit" який об'єднує дві гілки. Історія зберігається повністю — видно що гілки існували окремо.</p>
+    <pre><span class="cm"># Знаходимось на main, мерджимо feature</span>
+git merge feature/login-screen</pre>
+    <div class="example">Як злиття двох річок — видно де кожна починалась, є точка злиття</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>git rebase — чиста лінійна історія <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Переносить commits з однієї гілки "поверх" іншої. Переписує SHA commits. Історія виглядає як ніби гілки не було.</p>
+    <pre><span class="cm"># Знаходимось на feature, ребейсимо на main</span>
+git rebase main
+
+<span class="cm"># Після rebase — force push (бо SHA змінились)</span>
+git push --force-with-lease</pre>
+    <div class="example">Як переклеїти стікери з одного стовпця на інший — вони ті самі, але виглядають як одна лінія</div>
+    <div class="warn">Ніколи не робити rebase на shared branches (main, develop) — переписуєш історію для всіх</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Коли що використовувати</div>
+    <div class="pill-row" style="flex-direction:column;gap:6px;">
+      <span class="pill pill-blue">merge — для об'єднання feature в main/develop</span>
+      <span class="pill pill-green">rebase — щоб підтягнути зміни з main у свою feature-гілку</span>
+      <span class="pill pill-yellow">interactive rebase — щоб прибрати/об'єднати commits перед PR</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Interactive rebase — squash commits</div>
+    <pre><span class="cm"># Об'єднати останні 3 commits в один</span>
+git rebase -i HEAD~3
+
+<span class="cm"># У редакторі:</span>
+<span class="cm"># pick abc123 feat: add login UI</span>
+<span class="cm"># squash def456 fix: typo</span>
+<span class="cm"># squash ghi789 fix: button color</span></pre>
+    <div class="example">Squash — прибрати "fix typo", "wip", "oops" перед тим як відкрити PR</div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-title"><span class="section-num">03</span><h2>git cherry-pick</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке cherry-pick <span class="q-badge">❓ питають</span></div>
+    <p>Переносить конкретний commit з однієї гілки на іншу. Корисно коли потрібно взяти тільки один фікс без всієї гілки.</p>
+    <pre><span class="cm"># Знаходимось на main</span>
+<span class="cm"># Хочемо взяти тільки один commit з hotfix-гілки</span>
+git cherry-pick abc1234
+
+<span class="cm"># Кілька commits</span>
+git cherry-pick abc1234 def5678</pre>
+    <div class="example">Як взяти один рецепт з кулінарної книги не купуючи всю книгу — критичний hotfix в main без решти feature</div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="section-title"><span class="section-num">04</span><h2>git stash</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Stash — тимчасово сховати зміни</div>
+    <p>Зберігає незакомічені зміни "в ящик" щоб переключитись на іншу гілку і повернути потім.</p>
+    <pre><span class="cm"># Сховати зміни</span>
+git stash
+
+<span class="cm"># Подивитись що є в stash</span>
+git stash list
+
+<span class="cm"># Повернути останні зміни</span>
+git stash pop
+
+<span class="cm"># Повернути конкретний stash</span>
+git stash apply stash@{1}
+
+<span class="cm"># Стеш з назвою</span>
+git stash push -m "WIP: login animation"</pre>
+    <div class="example">Стеш — як покласти роботу в шухляду: переключився на термінове завдання, потім дістав і продовжив</div>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="section-title"><span class="section-num">05</span><h2>reset vs revert</h2></div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-red"></span>git reset <span class="q-badge">❓ питають</span></div>
+      <p style="font-size:13px;">Переміщує HEAD назад, <b>видаляє</b> commits з історії.</p>
+      <pre><span class="cm"># Скасувати commit, зберегти зміни</span>
+git reset --soft HEAD~1
+
+<span class="cm"># Скасувати commit і зміни</span>
+git reset --hard HEAD~1</pre>
+      <div class="warn" style="font-size:12px;">Не використовувати на pushed commits — переписує публічну історію</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>git revert</div>
+      <p style="font-size:13px;">Створює <b>новий</b> commit який скасовує зміни. Безпечно для shared branches.</p>
+      <pre><span class="cm"># Безпечно скасувати commit</span>
+git revert abc1234</pre>
+      <div class="example" style="font-size:12px;">Для main/develop — тільки revert, ніколи reset</div>
+    </div>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="section-title"><span class="section-num">06</span><h2>Git Flow для iOS команди</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Типовий процес у команді</div>
+    <div class="pill-row" style="flex-direction:column;gap:6px;margin-top:4px;">
+      <span class="pill pill-blue">1. main — стабільний код, тільки через PR</span>
+      <span class="pill pill-green">2. develop — інтеграційна гілка</span>
+      <span class="pill pill-yellow">3. feature/xxx — нова функціональність</span>
+      <span class="pill pill-red">4. hotfix/xxx — термінові фікси прямо в main</span>
+    </div>
+    <pre style="margin-top:12px;"><span class="cm"># Типовий цикл фічі</span>
+git checkout develop
+git pull
+git checkout -b feature/profile-screen
+<span class="cm"># ... робота ...</span>
+git rebase develop        <span class="cm"># підтягнути свіжі зміни</span>
+git push origin feature/profile-screen
+<span class="cm"># відкрити Pull Request → code review → merge</span></pre>
+  </div>
+</section>
+
+<section id="s7">
+  <div class="section-title"><span class="section-num">07</span><h2>Типові питання на співбесіді</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке конфлікт і як вирішити?</div>
+    <p>Конфлікт — два розробники змінили той самий рядок по-різному. Git не знає яку версію залишити і позначає конфлікт у файлі.</p>
+    <pre><span class="cm"><<<<<<< HEAD</span>
+<span class="cm">let color = UIColor.blue    // твоя версія</span>
+<span class="cm">=======</span>
+<span class="cm">let color = UIColor.red     // версія з main</span>
+<span class="cm">>>>>>>> main</span>
+
+<span class="cm"># Обираємо потрібну версію, видаляємо маркери, комітимо</span>
+git add .
+git commit</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>git fetch vs git pull?</div>
+    <p><b>fetch</b> — завантажує зміни але не застосовує. <b>pull</b> = fetch + merge. Краще робити fetch + rebase для чистої історії.</p>
+    <pre>git fetch origin
+git rebase origin/main   <span class="cm"># замість git pull</span></pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке .gitignore в iOS проєкті?</div>
+    <p>Файли які не треба комітити: <code>.DS_Store</code>, папка <code>Pods/</code> (якщо є Podfile.lock), <code>*.xcuserdata</code>, <code>DerivedData/</code>, секретні ключі та API tokens.</p>
+  </div>
+</section>
+
+<footer>iOS Interview Cheatsheet · Git · Swift</footer>
+</body>
+</html>

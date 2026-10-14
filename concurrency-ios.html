@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concurrency in iOS — Interview Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  :root {
+    --bg:#0d0f14;--surface:#13161e;--border:#1f2433;
+    --accent:#5b8fff;--accent2:#ff6b6b;--accent3:#43e8a4;--accent4:#f9c74f;
+    --text:#dce3f0;--muted:#6b7a99;--code-bg:#0a0c12;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;line-height:1.6;padding:32px 20px 60px;max-width:860px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#fff}
+  header h1 span{color:var(--accent)}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;letter-spacing:0.5px}
+  .toc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+  .toc a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:var(--muted);transition:all .15s}
+  .toc a:hover{border-color:var(--accent);color:var(--accent)}
+  section{margin-bottom:44px}
+  .section-title{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .section-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(91,143,255,0.1);border:1px solid rgba(91,143,255,0.25);padding:2px 8px;border-radius:4px;flex-shrink:0}
+  h2{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+  .card-title{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot-blue{background:var(--accent)}.dot-red{background:var(--accent2)}.dot-green{background:var(--accent3)}.dot-yellow{background:var(--accent4)}
+  p{color:var(--text);opacity:.85;font-size:14px}
+  .example{margin-top:8px;font-size:13px;color:var(--accent3);font-style:italic;opacity:.85}
+  .example::before{content:"💡 "}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c9d4f0}
+  .kw{color:#ff7eb6}.fn{color:#79c0ff}.str{color:#a8d8a8}.cm{color:#4d5875;font-style:italic}.ty{color:#f9c74f}.num{color:#ff9a5c}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:3px 10px;border-radius:5px}
+  .pill-blue{background:rgba(91,143,255,0.12);color:var(--accent);border:1px solid rgba(91,143,255,0.2)}
+  .pill-red{background:rgba(255,107,107,0.1);color:var(--accent2);border:1px solid rgba(255,107,107,0.2)}
+  .pill-green{background:rgba(67,232,164,0.1);color:var(--accent3);border:1px solid rgba(67,232,164,0.2)}
+  .pill-yellow{background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:580px){.grid2{grid-template-columns:1fr}}
+  .warn{border-left:3px solid var(--accent2);padding-left:14px;font-size:13.5px;color:var(--accent2);opacity:.9;margin-top:8px}
+  .q-badge{font-family:'JetBrains Mono',monospace;font-size:10.5px;background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2);padding:2px 8px;border-radius:4px;margin-left:auto;white-space:nowrap}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:28px;transition:color .15s}
+  .back-link:hover{color:var(--accent)}
+  footer{margin-top:48px;border-top:1px solid var(--border);padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← всі конспекти</a>
+
+<header>
+  <div>
+    <h1>Concurrency in <span>iOS</span></h1>
+    <div style="margin-top:6px;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace;">Interview cheatsheet · Swift</div>
+  </div>
+  <span class="tag">GCD · async/await · Actor · Task</span>
+</header>
+
+<nav class="toc">
+  <a href="#s1">Потоки</a>
+  <a href="#s2">GCD</a>
+  <a href="#s3">async/await</a>
+  <a href="#s4">Actor</a>
+  <a href="#s5">Task</a>
+  <a href="#s6">Q&A</a>
+</nav>
+
+<section id="s1">
+  <div class="section-title"><span class="section-num">01</span><h2>Потоки — основи</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Main thread vs Background thread</div>
+    <p><b>Main thread</b> — єдиний потік де можна оновлювати UI. <b>Background thread</b> — для важкої роботи: мережа, парсинг, запити до БД.</p>
+    <div class="example">Main thread — як касир в магазині: він обслуговує покупців (UI). Якщо змусити його ще й розвантажувати товар (мережевий запит) — черга стоїть, додаток зависає.</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Що буде якщо оновити UI з background? <span class="q-badge">❓ часто питають</span></div>
+    <p>Undefined behavior — краш або непередбачувана поведінка. Xcode покаже попередження "UI API called from background thread".</p>
+    <pre><span class="cm">// Неправильно</span>
+<span class="ty">URLSession</span>.shared.<span class="fn">dataTask</span>(with: url) { data, _, _ <span class="kw">in</span>
+    self.label.text = <span class="str">"готово"</span>  <span class="cm">// ❌ background thread!</span>
+}
+
+<span class="cm">// Правильно</span>
+<span class="ty">DispatchQueue</span>.main.<span class="fn">async</span> {
+    self.label.text = <span class="str">"готово"</span>  <span class="cm">// ✓ main thread</span>
+}</pre>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-title"><span class="section-num">02</span><h2>GCD — Grand Central Dispatch</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>DispatchQueue — черга завдань</div>
+    <p>GCD — старий але все ще актуальний спосіб керувати потоками. Ти кидаєш завдання в чергу, система вирішує на якому потоці виконати.</p>
+    <div class="pill-row">
+      <span class="pill pill-blue">main — для UI</span>
+      <span class="pill pill-green">global() — фонова робота</span>
+      <span class="pill pill-yellow">custom — власна черга</span>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>async vs sync <span class="q-badge">❓ питають</span></div>
+      <p style="font-size:13px;"><b>async</b> — не чекає виконання, йде далі.<br><b>sync</b> — блокує поточний потік до завершення.</p>
+      <pre><span class="ty">DispatchQueue</span>.global().<span class="fn">async</span> {
+    <span class="cm">// виконується паралельно</span>
+}
+<span class="cm">// sync на main → deadlock!</span></pre>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-yellow"></span>QoS — пріоритет</div>
+      <p style="font-size:13px;">Quality of Service — пріоритет черги.</p>
+      <div class="pill-row" style="flex-direction:column;gap:4px;margin-top:6px;">
+        <span class="pill pill-red">.userInteractive — UI анімації</span>
+        <span class="pill pill-yellow">.userInitiated — дія юзера</span>
+        <span class="pill pill-green">.utility — довгі операції</span>
+        <span class="pill pill-blue">.background — синхронізація</span>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>serial vs concurrent <span class="q-badge">❓ часто питають</span></div>
+    <p><b>Serial</b> — завдання виконуються одне за одним. <b>Concurrent</b> — паралельно.</p>
+    <pre><span class="cm">// Serial — власна черга (за замовчуванням serial)</span>
+<span class="kw">let</span> serial = <span class="ty">DispatchQueue</span>(label: <span class="str">"com.app.serial"</span>)
+
+<span class="cm">// Concurrent</span>
+<span class="kw">let</span> concurrent = <span class="ty">DispatchQueue</span>(label: <span class="str">"com.app.concurrent"</span>,
+                               attributes: .concurrent)</pre>
+    <div class="example">Serial — одна каса в магазині, concurrent — кілька кас паралельно</div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-title"><span class="section-num">03</span><h2>async / await — сучасна конкурентність</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Як працює async/await під капотом <span class="q-badge">❓ питають</span></div>
+    <p>async функція може бути <b>призупинена</b> (suspend) не блокуючи потік. Потік звільняється і може виконувати інші завдання. Коли результат готовий — функція відновлюється (resume).</p>
+    <div class="example">Як офіціант: прийняв замовлення → пішов до інших столиків → повернувся коли страва готова. Він не стоїть і не чекає біля кухні.</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>MainActor — заміна DispatchQueue.main</div>
+    <pre><span class="cm">// Старий спосіб</span>
+<span class="ty">DispatchQueue</span>.main.<span class="fn">async</span> { self.<span class="fn">updateUI</span>() }
+
+<span class="cm">// Новий спосіб</span>
+<span class="kw">await</span> <span class="ty">MainActor</span>.<span class="fn">run</span> { self.<span class="fn">updateUI</span>() }
+
+<span class="cm">// Або помітити весь клас</span>
+<span class="kw">@MainActor</span>
+<span class="kw">class</span> <span class="ty">MyViewModel</span>: <span class="ty">ObservableObject</span> {
+    <span class="cm">// всі методи автоматично на main thread</span>
+}</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>withCheckedContinuation — міст між GCD і async</div>
+    <p>Якщо є старий код із completion handler — можна обгорнути в async функцію.</p>
+    <pre><span class="kw">func</span> <span class="fn">fetchData</span>() <span class="kw">async throws</span> -> <span class="ty">Data</span> {
+    <span class="kw">try await</span> <span class="fn">withCheckedThrowingContinuation</span> { continuation <span class="kw">in</span>
+        <span class="fn">oldAPIWithCompletion</span> { data, error <span class="kw">in</span>
+            <span class="kw">if let</span> error { continuation.<span class="fn">resume</span>(throwing: error) }
+            <span class="kw">else if let</span> data { continuation.<span class="fn">resume</span>(returning: data) }
+        }
+    }
+}</pre>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="section-title"><span class="section-num">04</span><h2>Actor — захист від data race</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке data race і actor <span class="q-badge">❓ питають</span></div>
+    <p><b>Data race</b> — два потоки одночасно читають/пишуть одні дані → непередбачуваний результат. <b>Actor</b> — як клас, але гарантує що до його стану звертається лише один потік одночасно.</p>
+    <pre><span class="kw">actor</span> <span class="ty">Counter</span> {
+    <span class="kw">private var</span> value = <span class="num">0</span>
+
+    <span class="kw">func</span> <span class="fn">increment</span>() { value += <span class="num">1</span> }
+    <span class="kw">func</span> <span class="fn">get</span>() -> <span class="ty">Int</span> { value }
+}
+
+<span class="kw">let</span> counter = <span class="ty">Counter</span>()
+<span class="kw">await</span> counter.<span class="fn">increment</span>()  <span class="cm">// await бо actor може бути зайнятий</span></pre>
+    <div class="example">Actor — як банківська каса з одним вікном: черга є, але плутанини з грошима немає</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>nonisolated</div>
+    <p>Якщо метод не торкається стану actor — можна позначити nonisolated, тоді await не потрібен.</p>
+    <pre><span class="kw">actor</span> <span class="ty">MyActor</span> {
+    <span class="kw">nonisolated func</span> <span class="fn">greet</span>() -> <span class="ty">String</span> { <span class="str">"Hello"</span> }
+}</pre>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="section-title"><span class="section-num">05</span><h2>Task — одиниця async роботи</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Task і TaskGroup</div>
+    <pre><span class="cm">// Один Task</span>
+<span class="ty">Task</span> {
+    <span class="kw">let</span> data = <span class="kw">try await</span> <span class="fn">fetchData</span>()
+}
+
+<span class="cm">// Паралельні Tasks — withTaskGroup</span>
+<span class="kw">let</span> results = <span class="kw">try await</span> <span class="fn">withThrowingTaskGroup</span>(of: <span class="ty">Post</span>.<span class="kw">self</span>) { group <span class="kw">in</span>
+    <span class="kw">for</span> id <span class="kw">in</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>] {
+        group.<span class="fn">addTask</span> { <span class="kw">try await</span> <span class="fn">fetchPost</span>(id: id) }
+    }
+    <span class="kw">return try await</span> group.<span class="fn">reduce</span>(into: []) { $0.<span class="fn">append</span>($1) }
+}</pre>
+    <div class="example">withTaskGroup — як відправити кількох кур'єрів одночасно і чекати поки всі повернуться</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>async let — паралельне виконання <span class="q-badge">❓ питають</span></div>
+    <pre><span class="cm">// Послідовно — повільно (чекає кожен)</span>
+<span class="kw">let</span> user  = <span class="kw">try await</span> <span class="fn">fetchUser</span>()
+<span class="kw">let</span> posts = <span class="kw">try await</span> <span class="fn">fetchPosts</span>()
+
+<span class="cm">// Паралельно — швидко</span>
+<span class="kw">async let</span> user  = <span class="fn">fetchUser</span>()
+<span class="kw">async let</span> posts = <span class="fn">fetchPosts</span>()
+<span class="kw">let</span> (u, p) = <span class="kw">try await</span> (user, posts)</pre>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="section-title"><span class="section-num">06</span><h2>Типові питання на співбесіді</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>GCD vs async/await — коли що?</div>
+    <p>async/await — для нового коду, читабельніше, безпечніше. GCD — для старого коду або специфічних задач (DispatchGroup, Semaphore, бар'єри для concurrent черг). На нових проєктах — async/await.</p>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке deadlock?</div>
+    <p>Deadlock — два потоки чекають один одного і обидва заблоковані назавжди. Класичний приклад: sync на main queue з main queue.</p>
+    <pre><span class="ty">DispatchQueue</span>.main.<span class="fn">sync</span> {  <span class="cm">// ❌ deadlock якщо вже на main</span>
+    <span class="fn">doSomething</span>()
+}</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Чим Task відрізняється від Thread?</div>
+    <p>Thread — системний потік, дорогий ресурс. Task — легковагова одиниця роботи в Swift Concurrency. Багато Tasks можуть виконуватись на невеликій кількості потоків — система сама керує.</p>
+  </div>
+</section>
+
+<footer>iOS Interview Cheatsheet · Concurrency · Swift</footer>
+</body>
+</html>

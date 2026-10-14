@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Layout in iOS — Interview Cheatsheet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
+  :root{--bg:#0d0f14;--surface:#13161e;--border:#1f2433;--accent:#5b8fff;--accent2:#ff6b6b;--accent3:#43e8a4;--accent4:#f9c74f;--text:#dce3f0;--muted:#6b7a99;--code-bg:#0a0c12}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:15px;line-height:1.6;padding:32px 20px 60px;max-width:860px;margin:0 auto}
+  header{border-bottom:1px solid var(--border);padding-bottom:24px;margin-bottom:36px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{font-size:28px;font-weight:800;letter-spacing:-0.5px;color:#fff}
+  header h1 span{color:var(--accent)}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--border);color:var(--muted);padding:4px 10px;border-radius:20px;letter-spacing:0.5px}
+  .toc{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px}
+  .toc a{font-family:'JetBrains Mono',monospace;font-size:12px;text-decoration:none;padding:5px 12px;border-radius:6px;border:1px solid var(--border);color:var(--muted);transition:all .15s}
+  .toc a:hover{border-color:var(--accent);color:var(--accent)}
+  section{margin-bottom:44px}
+  .section-title{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .section-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(91,143,255,0.1);border:1px solid rgba(91,143,255,0.25);padding:2px 8px;border-radius:4px;flex-shrink:0}
+  h2{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+  .card-title{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .dot-blue{background:var(--accent)}.dot-red{background:var(--accent2)}.dot-green{background:var(--accent3)}.dot-yellow{background:var(--accent4)}
+  p{color:var(--text);opacity:.85;font-size:14px}
+  .example{margin-top:8px;font-size:13px;color:var(--accent3);font-style:italic;opacity:.85}
+  .example::before{content:"💡 "}
+  pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-top:10px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c9d4f0}
+  .kw{color:#ff7eb6}.fn{color:#79c0ff}.str{color:#a8d8a8}.cm{color:#4d5875;font-style:italic}.ty{color:#f9c74f}.num{color:#ff9a5c}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:3px 10px;border-radius:5px}
+  .pill-blue{background:rgba(91,143,255,0.12);color:var(--accent);border:1px solid rgba(91,143,255,0.2)}
+  .pill-red{background:rgba(255,107,107,0.1);color:var(--accent2);border:1px solid rgba(255,107,107,0.2)}
+  .pill-green{background:rgba(67,232,164,0.1);color:var(--accent3);border:1px solid rgba(67,232,164,0.2)}
+  .pill-yellow{background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:580px){.grid2{grid-template-columns:1fr}}
+  .warn{border-left:3px solid var(--accent2);padding-left:14px;font-size:13.5px;color:var(--accent2);opacity:.9;margin-top:8px}
+  .q-badge{font-family:'JetBrains Mono',monospace;font-size:10.5px;background:rgba(249,199,79,0.1);color:var(--accent4);border:1px solid rgba(249,199,79,0.2);padding:2px 8px;border-radius:4px;margin-left:auto;white-space:nowrap}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:28px;transition:color .15s}
+  .back-link:hover{color:var(--accent)}
+  footer{margin-top:48px;border-top:1px solid var(--border);padding-top:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">← всі конспекти</a>
+
+<header>
+  <div>
+    <h1>Auto Layout in <span>iOS</span></h1>
+    <div style="margin-top:6px;color:var(--muted);font-size:13px;font-family:'JetBrains Mono',monospace;">Interview cheatsheet · Swift / UIKit</div>
+  </div>
+  <span class="tag">Constraints · UIStackView · Content Hugging</span>
+</header>
+
+<nav class="toc">
+  <a href="#s1">Основи</a>
+  <a href="#s2">Constraints у коді</a>
+  <a href="#s3">UIStackView</a>
+  <a href="#s4">Content Hugging</a>
+  <a href="#s5">Safe Area</a>
+  <a href="#s6">Q&A</a>
+</nav>
+
+<section id="s1">
+  <div class="section-title"><span class="section-num">01</span><h2>Основи Auto Layout</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Що таке Auto Layout</div>
+    <p>Система правил (constraints) яка описує розмір і позицію view відносно інших view або батьківського контейнера. Дозволяє адаптуватись до різних розмірів екрану.</p>
+    <div class="example">Як договір між view: "я завжди буду на 16pt від лівого краю батька і по центру по вертикалі"</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Мінімум constraints для view <span class="q-badge">❓ питають</span></div>
+    <p>Кожне view потребує повністю визначеного положення і розміру. Зазвичай потрібно 4 constraint або менше якщо view має intrinsic size.</p>
+    <div class="pill-row">
+      <span class="pill pill-blue">X-позиція (leading/trailing/centerX)</span>
+      <span class="pill pill-green">Y-позиція (top/bottom/centerY)</span>
+      <span class="pill pill-yellow">ширина (width або leading+trailing)</span>
+      <span class="pill pill-red">висота (height або top+bottom)</span>
+    </div>
+    <div class="warn">UILabel, UIButton, UIImageView мають intrinsicContentSize — ширина і висота визначаються автоматично з контенту</div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="section-title"><span class="section-num">02</span><h2>Constraints у коді</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>translatesAutoresizingMaskIntoConstraints = false <span class="q-badge">❓ обов'язково питають</span></div>
+    <p>Якщо створюєш view у коді — обов'язково виставити в false. Інакше AutoLayout конфліктуватиме зі старою системою frame-based layout.</p>
+    <pre><span class="kw">let</span> button = <span class="ty">UIButton</span>()
+button.translatesAutoresizingMaskIntoConstraints = <span class="kw">false</span>  <span class="cm">// ❗ не забути</span>
+view.<span class="fn">addSubview</span>(button)
+
+<span class="ty">NSLayoutConstraint</span>.<span class="fn">activate</span>([
+    button.<span class="fn">centerXAnchor</span>.<span class="fn">constraint</span>(equalTo: view.centerXAnchor),
+    button.<span class="fn">centerYAnchor</span>.<span class="fn">constraint</span>(equalTo: view.centerYAnchor),
+    button.<span class="fn">widthAnchor</span>.<span class="fn">constraint</span>(equalToConstant: <span class="num">200</span>),
+    button.<span class="fn">heightAnchor</span>.<span class="fn">constraint</span>(equalToConstant: <span class="num">44</span>)
+])</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>Динамічні constraints — змінювати через constant</div>
+    <pre><span class="kw">var</span> topConstraint: <span class="ty">NSLayoutConstraint</span>!
+
+topConstraint = label.<span class="fn">topAnchor</span>.<span class="fn">constraint</span>(equalTo: view.topAnchor, constant: <span class="num">20</span>)
+topConstraint.isActive = <span class="kw">true</span>
+
+<span class="cm">// Пізніше — змінити позицію</span>
+topConstraint.constant = <span class="num">100</span>
+<span class="ty">UIView</span>.<span class="fn">animate</span>(withDuration: <span class="num">0.3</span>) { self.view.<span class="fn">layoutIfNeeded</span>() }</pre>
+    <div class="example">layoutIfNeeded() всередині animate — щоб constraint анімувався плавно</div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="section-title"><span class="section-num">03</span><h2>UIStackView</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>Навіщо UIStackView <span class="q-badge">❓ питають</span></div>
+    <p>Автоматично розставляє дочірні view в ряд або колонку. Не потрібно вручну прописувати constraints між елементами — StackView робить це сам.</p>
+    <pre><span class="kw">let</span> stack = <span class="ty">UIStackView</span>(arrangedSubviews: [label, button, imageView])
+stack.axis = .vertical
+stack.spacing = <span class="num">12</span>
+stack.alignment = .center    <span class="cm">// .fill .leading .trailing</span>
+stack.distribution = .fill   <span class="cm">// .fillEqually .equalSpacing</span></pre>
+    <div class="example">StackView — як FlexBox у вебі: сам рахує відстані між елементами</div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><span class="dot dot-yellow"></span>alignment</div>
+      <p style="font-size:13px;">Як елементи вирівнюються <b>поперек</b> осі.</p>
+      <div class="pill-row" style="flex-direction:column;gap:4px;margin-top:6px;">
+        <span class="pill pill-blue">.fill — розтягнути</span>
+        <span class="pill pill-green">.center — по центру</span>
+        <span class="pill pill-yellow">.leading/.trailing</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot dot-green"></span>distribution</div>
+      <p style="font-size:13px;">Як елементи розподіляються <b>вздовж</b> осі.</p>
+      <div class="pill-row" style="flex-direction:column;gap:4px;margin-top:6px;">
+        <span class="pill pill-blue">.fill — перший тягнеться</span>
+        <span class="pill pill-green">.fillEqually — рівні частки</span>
+        <span class="pill pill-yellow">.equalSpacing — рівні відступи</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="section-title"><span class="section-num">04</span><h2>Content Hugging & Compression Resistance</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Content Hugging Priority <span class="q-badge">❓ часто питають</span></div>
+    <p>Наскільки view <b>опирається збільшенню</b> понад свій intrinsic size. Вищий пріоритет = view не хоче рости.</p>
+    <div class="example">Два Label в горизонтальному StackView — хто з них розтягнеться? Той у кого нижчий hugging priority.</div>
+    <pre><span class="cm">// Хочемо щоб titleLabel тягнувся, а badge — ні</span>
+titleLabel.<span class="fn">setContentHuggingPriority</span>(.defaultLow, for: .horizontal)
+badgeLabel.<span class="fn">setContentHuggingPriority</span>(.defaultHigh, for: .horizontal)</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-red"></span>Compression Resistance Priority</div>
+    <p>Наскільки view <b>опирається стисненню</b> нижче свого intrinsic size. Вищий пріоритет = view не хоче стискатись.</p>
+    <div class="example">Якщо місця мало — який label обрізається першим? Той у кого нижчий compression resistance.</div>
+    <pre><span class="cm">// Важливий текст не обрізається</span>
+importantLabel.<span class="fn">setContentCompressionResistancePriority</span>(.required, for: .horizontal)</pre>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="section-title"><span class="section-num">05</span><h2>Safe Area & Layout Margins</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-blue"></span>safeAreaLayoutGuide <span class="q-badge">❓ питають</span></div>
+    <p>Зона екрану яка не перекрита нотчем, home indicator або status bar. Контент треба прив'язувати до safeAreaLayoutGuide а не до країв view.</p>
+    <pre>button.<span class="fn">bottomAnchor</span>.<span class="fn">constraint</span>(
+    equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+    constant: -<span class="num">16</span>
+).isActive = <span class="kw">true</span></pre>
+    <div class="example">Кнопка "Далі" внизу — завжди над home indicator, не під ним</div>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-green"></span>layoutMarginsGuide</div>
+    <p>Системні відступи від країв (зазвичай 16pt з боків). Зручно для стандартного відступу контенту без хардкоду.</p>
+    <pre>label.<span class="fn">leadingAnchor</span>.<span class="fn">constraint</span>(
+    equalTo: view.layoutMarginsGuide.leadingAnchor
+).isActive = <span class="kw">true</span></pre>
+  </div>
+</section>
+
+<section id="s6">
+  <div class="section-title"><span class="section-num">06</span><h2>Типові питання на співбесіді</h2></div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке intrinsicContentSize?</div>
+    <p>Природній розмір view на основі його контенту. UILabel — залежить від тексту і шрифту. UIButton — від тексту + padding. UIImageView — від розміру зображення. Якщо view має intrinsicContentSize — не обов'язково задавати width і height constraints.</p>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Як анімувати зміну constraint?</div>
+    <pre><span class="cm">// 1. Змінюємо constant</span>
+myConstraint.constant = <span class="num">200</span>
+<span class="cm">// 2. Викликаємо layoutIfNeeded всередині animate</span>
+<span class="ty">UIView</span>.<span class="fn">animate</span>(withDuration: <span class="num">0.3</span>) {
+    self.view.<span class="fn">layoutIfNeeded</span>()
+}</pre>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Frame vs Auto Layout — коли що?</div>
+    <p><b>Frame</b> — точні координати, швидше але не адаптивне. Використовують для кастомних анімацій або колекцій з кастомним layout. <b>Auto Layout</b> — адаптивне, підходить для більшості UI. На співбесіді: для стандартного UI — Auto Layout, для складного кастомного — frame або обидва разом.</p>
+  </div>
+  <div class="card">
+    <div class="card-title"><span class="dot dot-yellow"></span>Що таке Ambiguous Layout?</div>
+    <p>Недостатньо constraints — система не може однозначно визначити розмір або позицію view. Xcode показує попередження. Дебажити: <code>view.hasAmbiguousLayout</code> або View Debugger.</p>
+  </div>
+</section>
+
+<footer>iOS Interview Cheatsheet · Auto Layout · Swift / UIKit</footer>
+</body>
+</html>
